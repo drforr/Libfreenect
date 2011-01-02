@@ -16,5 +16,29 @@ void
 hello()
 	CODE:
 		printf( "Hello, world!\n" );
+
+void *
+init()
+	CODE:
+		void * f_ctx;
+		printf( "Initializing freenect!\n" );
+		int result = freenect_init( &f_ctx, NULL );
+		if ( result == -1 )
+			RETVAL = result;
+		else
+			RETVAL = f_ctx;
 	OUTPUT:
-		f_ctx
+		RETVAL
+
+void
+set_log_level()
+	CODE:
+		printf( "Setting freenect logging level!\n" );
+
+int
+num_devices()
+	CODE:
+		printf( "Returning device count!\n" );
+		RETVAL = -1;
+	OUTPUT:
+		RETVAL
