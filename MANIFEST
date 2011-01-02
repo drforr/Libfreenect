@@ -4,6 +4,7 @@ Makefile.PL
 MANIFEST
 ppport.h
 README
+examples/connect
 t/Libfreenect.t
 fallback/const-c.inc
 fallback/const-xs.inc
