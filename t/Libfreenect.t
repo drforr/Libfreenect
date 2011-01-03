@@ -42,8 +42,6 @@ ok( $fail == 0 , 'Constants' );
 # Insert your test code below, the Test::More module is use()ed here so read
 # its man page ( perldoc Test::More ) for help writing this test script.
 
-my $f_ctx;
-
-ok ( $f_ctx = Libfreenect::init() );
-#die "Init: $f_ctx\n";
-is( Libfreenect::num_devices(), 1 );
+my $lib = Libfreenect->new;
+$lib->set_log_level( 1 ); # XXX Needs to really work...
+$lib->num_devices > 0 or BAIL_OUT( "No devices found!" );

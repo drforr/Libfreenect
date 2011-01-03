@@ -149,6 +149,35 @@ XSLoader::load('Libfreenect', $VERSION);
 
 # Preloaded methods go here.
 
+sub new {
+  my ( $proto, $args ) = @_;
+  my $class = ref $proto || $proto;
+
+  my $f_ctx = Libfreenect::init();
+  die "*** Could not init!\n" unless $f_ctx;
+  return bless {
+    f_ctx => $f_ctx
+  }, $class;
+}
+
+sub DESTROY {
+  my $self = shift;
+  my $ret = Libfreenect::shutdown( $self->{f_ctx} );
+  if ( $ret ) {
+    die "*** Unclean shutdown! $ret\n";
+  }
+}
+
+sub set_log_level {
+  my ( $self ) = shift;
+  Libfreenect::_set_log_level( $self->{f_ctx} );
+}
+
+sub num_devices {
+  my $self = shift;
+  return Libfreenect::_num_devices( $self->{f_ctx} );
+}
+
 # Autoload methods go after =cut, and are processed by the autosplit program.
 
 1;

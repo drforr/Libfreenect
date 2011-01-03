@@ -23,6 +23,7 @@ init()
 		void * f_ctx;
 		printf( "Initializing freenect!\n" );
 		int result = freenect_init( &f_ctx, NULL );
+		// XXX FIXME DAMNIT
 		if ( result == -1 )
 			RETVAL = result;
 		else
@@ -30,15 +31,23 @@ init()
 	OUTPUT:
 		RETVAL
 
+int
+shutdown( void * f_ctx )
+	CODE:
+		RETVAL = freenect_shutdown( f_ctx );
+	OUTPUT:
+		RETVAL
+
 void
-set_log_level()
+_set_log_level( void * f_ctx )
 	CODE:
 		printf( "Setting freenect logging level!\n" );
+		freenect_set_log_level( f_ctx, FREENECT_LOG_DEBUG );
 
 int
-num_devices()
+_num_devices( void * f_ctx )
 	CODE:
 		printf( "Returning device count!\n" );
-		RETVAL = -1;
+		RETVAL = freenect_num_devices( f_ctx );
 	OUTPUT:
 		RETVAL
