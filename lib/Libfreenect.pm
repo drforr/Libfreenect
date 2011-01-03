@@ -191,7 +191,6 @@ sub open_device {
 
 sub close_device {
   my $self = shift;
-  my $device_number = shift;
   my $ret_val = Libfreenect::_close_device( $self->{f_dev} );
   if ( $ret_val < 0 ) {
     die "*** Could not close device!\n";

@@ -1,11 +1,5 @@
-# Before `make install' is performed this script should be runnable with
-# `make test'. After `make install' it should work as `perl Libfreenect.t'
-
-#########################
-
 use Test::More tests => 3;
 BEGIN { use_ok('Libfreenect') };
-
 
 my $fail = 0;
 foreach my $constname (qw(
@@ -33,17 +27,12 @@ foreach my $constname (qw(
     print "# fail: $@";
     $fail = 1;
   }
-
 }
 
 ok( $fail == 0 , 'Constants' );
-#########################
-
-# Insert your test code below, the Test::More module is use()ed here so read
-# its man page ( perldoc Test::More ) for help writing this test script.
 
 my $lib = Libfreenect->new;
 $lib->set_log_level( FREENECT_LOG_DEBUG );
 $lib->num_devices > 0 or BAIL_OUT( "No devices found!" );
 $lib->open_device( 0 );
-$lib->close_device;
+$lib->close_device( 0 );
