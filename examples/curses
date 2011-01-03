@@ -1,0 +1,40 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+use Libfreenect;
+
+use Curses;
+use POE qw(Wheel::Curses);
+
+POE::Session->create(
+  inline_states => {
+    _start => sub {
+      $_[HEAP]{console} = POE::Wheel::Curses->new(
+      InputEvent => 'got_keystroke',
+      );
+    },
+    got_keystroke => sub {
+      my $keystroke = $_[ARG0];
+    
+      # Make control and extended keystrokes printable.
+      if ($keystroke lt ' ') {
+        $keystroke = '<' . uc(unctrl($keystroke)) . '>';
+      }
+      elsif ($keystroke =~ /^\d{2,}$/) {
+        $keystroke = '<' . uc(keyname($keystroke)) . '>';
+      }
+    
+      # Just display it.
+      addstr($keystroke);
+      noutrefresh();
+      doupdate;
+    
+      # Gotta exit somehow.
+      delete $_[HEAP]{console} if $keystroke eq "<^C>";
+    },
+  }
+);
+
+POE::Kernel->run();
+exit;
