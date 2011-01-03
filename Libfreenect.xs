@@ -16,7 +16,6 @@ void *
 init()
 	CODE:
 		void * f_ctx;
-		printf( "Initializing freenect!\n" );
 		int result = freenect_init( &f_ctx, NULL );
 		// XXX FIXME DAMNIT
 		if ( result == -1 )
@@ -36,13 +35,11 @@ shutdown( void * f_ctx )
 void
 _set_log_level( void * f_ctx, int level )
 	CODE:
-		printf( "Setting freenect logging level!\n" );
 		freenect_set_log_level( f_ctx, (freenect_loglevel) level );
 
 int
 _num_devices( void * f_ctx )
 	CODE:
-		printf( "Returning device count!\n" );
 		RETVAL = freenect_num_devices( f_ctx );
 	OUTPUT:
 		RETVAL
@@ -166,5 +163,24 @@ int
 _set_tilt_degs( void * f_dev, double angle )
 	CODE:
 		RETVAL = freenect_set_tilt_degs( f_dev, angle );
+	OUTPUT:
+		RETVAL
+
+void *
+_malloc_buffer( )
+	CODE:
+		RETVAL = malloc( 640 * 480 * 3 );
+	OUTPUT:
+		RETVAL
+
+void
+_free_buffer( void * buffer )
+	CODE:
+		free( buffer );
+
+char
+_get_buffer_value( char * buffer, int idx )
+	CODE:
+		RETVAL = buffer[idx];
 	OUTPUT:
 		RETVAL

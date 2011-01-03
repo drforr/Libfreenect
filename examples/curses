@@ -9,32 +9,83 @@ use POE qw(Wheel::Curses);
 
 POE::Session->create(
   inline_states => {
-    _start => sub {
-      $_[HEAP]{console} = POE::Wheel::Curses->new(
-      InputEvent => 'got_keystroke',
-      );
-    },
-    got_keystroke => sub {
-      my $keystroke = $_[ARG0];
-    
-      # Make control and extended keystrokes printable.
-      if ($keystroke lt ' ') {
-        $keystroke = '<' . uc(unctrl($keystroke)) . '>';
-      }
-      elsif ($keystroke =~ /^\d{2,}$/) {
-        $keystroke = '<' . uc(keyname($keystroke)) . '>';
-      }
-    
-      # Just display it.
-      addstr($keystroke);
-      noutrefresh();
-      doupdate;
-    
-      # Gotta exit somehow.
-      delete $_[HEAP]{console} if $keystroke eq "<^C>";
-    },
+    _start => \&_start,
+    got_keystroke => \&got_keystroke,
   }
 );
+
+sub _start {
+  $_[HEAP]{console} = POE::Wheel::Curses->new(
+    InputEvent => 'got_keystroke',
+  );
+  my $lib = Libfreenect->new;
+  $lib->set_log_level( FREENECT_LOG_DEBUG );
+  $lib->num_devices > 0 or die( "No devices found!" );
+  $lib->open_device( 0 );
+
+  $_[HEAP]{freenect} = {
+    lib => $lib,
+    angle => 0,
+    buffers => {
+      depth_mid => $lib->malloc_buffer(),
+      depth_front => $lib->malloc_buffer(),
+      rgb_back => $lib->malloc_buffer(),
+      rgb_mid => $lib->malloc_buffer(),
+      rgb_front => $lib->malloc_buffer(),
+    },
+  };
+
+#  # Inspect a byte of the rgb_front buffer
+#  $lib->set_video_buffer( $_[HEAP]{buffers}{rgb_front} );
+###  $lib->process_events();
+#  print "Byte value: [".$lib->get_buffer_value( $_[HEAP]{buffers}{rgb_front}, 9 ). "]\n";
+}
+
+sub got_keystroke {
+  my $keystroke = $_[ARG0];
+
+  # Make control and extended keystrokes printable.
+  if ($keystroke lt ' ') {
+    $keystroke = '<' . uc(unctrl($keystroke)) . '>';
+  }
+  elsif ($keystroke =~ /^\d{2,}$/) {
+    $keystroke = '<' . uc(keyname($keystroke)) . '>';
+  }
+
+  # Just display it.
+#  addstr($keystroke);
+  noutrefresh();
+  doupdate;
+
+  my $freenect = $_[HEAP]{freenect};
+  my %action = (
+    '0' => sub { $freenect->{lib}->set_led( LED_BLINK_GREEN ) },
+    '1' => sub { $freenect->{lib}->set_led( LED_BLINK_RED_YELLOW ) },
+    '2' => sub { $freenect->{lib}->set_led( LED_BLINK_YELLOW ) },
+    '3' => sub { $freenect->{lib}->set_led( LED_GREEN ) },
+    '4' => sub { $freenect->{lib}->set_led( LED_OFF ) },
+    '5' => sub { $freenect->{lib}->set_led( LED_RED ) },
+    '6' => sub { $freenect->{lib}->set_led( LED_YELLOW ) },
+    'w' => sub { $freenect->{angle}++ }, 
+    's' => sub { $freenect->{angle} = 0 }, 
+    'x' => sub { $freenect->{angle}-- }, 
+  );
+  $action{$keystroke}->() if $action{$keystroke};
+  $freenect->{angle} = 30 if $freenect->{angle} > 30;
+  $freenect->{angle} = -30 if $freenect->{angle} < -30;
+
+  $freenect->{lib}->set_tilt_degs( $freenect->{angle} );
+
+  # Gotta exit somehow.
+  if ( $keystroke eq 'q' or $keystroke eq '<^C>' ) {
+    for my $k ( keys %{$_[HEAP]{freenect}{buffers}} ) {
+      $_[HEAP]{freenect}{lib}->free_buffer( $_[HEAP]{freenect}{buffers}{$k} );
+    }
+    $_[HEAP]{freenect}{lib}->close_device( 0 );
+    delete $_[HEAP]{console};
+    delete $_[HEAP]{freenect}{lib};
+  }
+}
 
 POE::Kernel->run();
 exit;

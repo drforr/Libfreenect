@@ -43,6 +43,8 @@ void freenect_get_mks_accel(freenect_raw_tilt_state *state, double* x, double* y
 
 ok( $fail == 0 , 'Constants' );
 
+#=pod
+
 my $lib = Libfreenect->new;
 $lib->set_log_level( FREENECT_LOG_DEBUG );
 $lib->num_devices > 0 or BAIL_OUT( "No devices found!" );

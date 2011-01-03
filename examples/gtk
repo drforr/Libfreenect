@@ -1,13 +1,9 @@
 #!/usr/bin/perl
 
-# http://poe.perl.org/?POE_Cookbook/Gtk_Interfaces
-#
-# This sample program creates a very simple Gtk counter.  Its
-# interface consists of three widgets: A label, a rapidly increasing
-# counter, and a button to reset that counter.
-
 use warnings;
 use strict;
+use lib 'lib';
+use Libfreenect;
 
 # Gtk support is enabled if the Gtk module is used before POE itself.
 # POE::Loop::Glib doesn't initialize Gtk2 (for obvious reasons), so we

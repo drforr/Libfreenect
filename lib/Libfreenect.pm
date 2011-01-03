@@ -280,6 +280,24 @@ sub set_tilt_degs {
   return Libfreenect::_set_tilt_degs( $self->{f_dev}, $angle );
 }
 
+sub malloc_buffer {
+  my $self = shift;
+  return Libfreenect::_malloc_buffer();
+}
+
+sub free_buffer {
+  my $self = shift;
+  my $buffer = shift;
+  Libfreenect::_free_buffer( $buffer );
+}
+
+sub get_buffer_value {
+  my $self = shift;
+  my $buffer = shift;
+  my $idx = shift;
+  return Libfreenect::_get_buffer_value( $buffer, $idx );
+}
+
 1;
 __END__
 
