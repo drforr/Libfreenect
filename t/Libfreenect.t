@@ -43,5 +43,5 @@ ok( $fail == 0 , 'Constants' );
 # its man page ( perldoc Test::More ) for help writing this test script.
 
 my $lib = Libfreenect->new;
-$lib->set_log_level( 1 ); # XXX Needs to really work...
+$lib->set_log_level( FREENECT_LOG_DEBUG );
 $lib->num_devices > 0 or BAIL_OUT( "No devices found!" );

@@ -39,10 +39,10 @@ shutdown( void * f_ctx )
 		RETVAL
 
 void
-_set_log_level( void * f_ctx )
+_set_log_level( void * f_ctx, int level )
 	CODE:
 		printf( "Setting freenect logging level!\n" );
-		freenect_set_log_level( f_ctx, FREENECT_LOG_DEBUG );
+		freenect_set_log_level( f_ctx, (freenect_loglevel) level );
 
 int
 _num_devices( void * f_ctx )

@@ -169,8 +169,9 @@ sub DESTROY {
 }
 
 sub set_log_level {
-  my ( $self ) = shift;
-  Libfreenect::_set_log_level( $self->{f_ctx} );
+  my $self = shift;
+  my $log_level = shift;
+  Libfreenect::_set_log_level( $self->{f_ctx}, $log_level );
 }
 
 sub num_devices {
