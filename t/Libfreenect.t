@@ -1,4 +1,4 @@
-use Test::More tests => 3;
+use Test::More tests => 2;
 BEGIN { use_ok('Libfreenect') };
 
 my $fail = 0;
@@ -29,10 +29,27 @@ foreach my $constname (qw(
   }
 }
 
+=pod
+
+void freenect_set_log_callback(freenect_context *ctx, freenect_log_cb cb);
+
+void freenect_set_depth_callback(freenect_device *dev, freenect_depth_cb cb);
+void freenect_set_video_callback(freenect_device *dev, freenect_video_cb cb);
+
+double freenect_get_tilt_degs(freenect_raw_tilt_state *state);
+void freenect_get_mks_accel(freenect_raw_tilt_state *state, double* x, double* y, double* z);
+
+=cut
+
 ok( $fail == 0 , 'Constants' );
 
 my $lib = Libfreenect->new;
 $lib->set_log_level( FREENECT_LOG_DEBUG );
 $lib->num_devices > 0 or BAIL_OUT( "No devices found!" );
 $lib->open_device( 0 );
+
+#$lib->set_led( LED_BLINK_RED_YELLOW );
+#$lib->set_led( LED_BLINK_GREEN );
+$lib->set_led( LED_OFF );
+
 $lib->close_device( 0 );

@@ -198,11 +198,90 @@ sub close_device {
   $self->{f_dev} = undef;
 }
 
-# Autoload methods go after =cut, and are processed by the autosplit program.
+sub set_led {
+  my $self = shift;
+  my $option = shift;
+  Libfreenect::_set_led( $self->{f_dev}, $option );
+}
+
+sub process_events {
+  my $self = shift;
+  return Libfreenect::_process_events( $self->{f_ctx} );
+}
+
+sub start_depth {
+  my $self = shift;
+  return Libfreenect::_start_depth( $self->{f_dev} );
+}
+
+sub stop_depth {
+  my $self = shift;
+  return Libfreenect::_stop_depth( $self->{f_dev} );
+}
+
+sub start_video {
+  my $self = shift;
+  return Libfreenect::_start_video( $self->{f_dev} );
+}
+
+sub stop_video {
+  my $self = shift;
+  return Libfreenect::_stop_video( $self->{f_dev} );
+}
+
+sub update_tilt_state {
+  my $self = shift;
+  return Libfreenect::_update_tilt_state( $self->{f_dev} );
+}
+
+sub get_tilt_state {
+  my $self = shift;
+  return Libfreenect::_get_tilt_state( $self->{f_dev} );
+}
+
+sub get_user {
+  my $self = shift;
+  return Libfreenect::_get_user( $self->{f_dev} );
+}
+
+sub set_user {
+  my $self = shift;
+  my $user = shift;
+  Libfreenect::_set_user( $self->{f_dev}, $user );
+}
+
+sub set_depth_format {
+  my $self = shift;
+  my $fmt = shift;
+  return Libfreenect::_set_depth_format( $self->{f_dev}, $fmt );
+}
+
+sub set_video_format {
+  my $self = shift;
+  my $fmt = shift;
+  return Libfreenect::_set_video_format( $self->{f_dev}, $fmt );
+}
+
+sub set_depth_buffer {
+  my $self = shift;
+  my $buf = shift;
+  return Libfreenect::_set_depth_buffer( $self->{f_dev}, $buf );
+}
+
+sub set_video_buffer {
+  my $self = shift;
+  my $buf = shift;
+  return Libfreenect::_set_video_buffer( $self->{f_dev}, $buf );
+}
+
+sub set_tilt_degs {
+  my $self = shift;
+  my $angle = shift;
+  return Libfreenect::_set_tilt_degs( $self->{f_dev}, $angle );
+}
 
 1;
 __END__
-# Below is stub documentation for your module. You'd better edit it!
 
 =head1 NAME
 
@@ -275,8 +354,6 @@ None by default.
   TILT_STATUS_MOVING
   TILT_STATUS_STOPPED
 
-
-
 =head1 SEE ALSO
 
 Mention other useful documentation such as the documentation of
@@ -299,6 +376,5 @@ Copyright (C) 2011 by Jeff
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself, either Perl version 5.10.1 or,
 at your option, any later version of Perl 5 you may have available.
-
 
 =cut
