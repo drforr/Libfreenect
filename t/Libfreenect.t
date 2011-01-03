@@ -45,3 +45,5 @@ ok( $fail == 0 , 'Constants' );
 my $lib = Libfreenect->new;
 $lib->set_log_level( FREENECT_LOG_DEBUG );
 $lib->num_devices > 0 or BAIL_OUT( "No devices found!" );
+$lib->open_device( 0 );
+$lib->close_device;

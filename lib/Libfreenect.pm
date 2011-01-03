@@ -179,6 +179,26 @@ sub num_devices {
   return Libfreenect::_num_devices( $self->{f_ctx} );
 }
 
+sub open_device {
+  my $self = shift;
+  my $device_number = shift;
+  my $ret_val = Libfreenect::_open_device( $self->{f_ctx}, $device_number );
+  if ( $ret_val < 0 ) {
+    die "*** Could not open device $device_number!\n";
+  }
+  $self->{f_dev} = $ret_val;
+}
+
+sub close_device {
+  my $self = shift;
+  my $device_number = shift;
+  my $ret_val = Libfreenect::_close_device( $self->{f_dev} );
+  if ( $ret_val < 0 ) {
+    die "*** Could not close device!\n";
+  }
+  $self->{f_dev} = undef;
+}
+
 # Autoload methods go after =cut, and are processed by the autosplit program.
 
 1;
