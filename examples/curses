@@ -22,6 +22,8 @@ sub _start {
   $lib->set_log_level( FREENECT_LOG_DEBUG );
   $lib->num_devices > 0 or die( "No devices found!" );
   $lib->open_device( 0 );
+  $lib->start_depth;
+  $lib->start_video;
 
   $_[HEAP]{freenect} = {
     lib => $lib,
@@ -35,9 +37,11 @@ sub _start {
     },
   };
 
+$lib->set_my_log_callback();
+
 #  # Inspect a byte of the rgb_front buffer
 #  $lib->set_video_buffer( $_[HEAP]{buffers}{rgb_front} );
-###  $lib->process_events();
+$lib->process_events();
 #  print "Byte value: [".$lib->get_buffer_value( $_[HEAP]{buffers}{rgb_front}, 9 ). "]\n";
 }
 
@@ -53,7 +57,6 @@ sub got_keystroke {
   }
 
   # Just display it.
-#  addstr($keystroke);
   noutrefresh();
   doupdate;
 
@@ -78,10 +81,13 @@ sub got_keystroke {
 
   # Gotta exit somehow.
   if ( $keystroke eq 'q' or $keystroke eq '<^C>' ) {
+    my $lib = $_[HEAP]{freenect}{lib};
     for my $k ( keys %{$_[HEAP]{freenect}{buffers}} ) {
-      $_[HEAP]{freenect}{lib}->free_buffer( $_[HEAP]{freenect}{buffers}{$k} );
+      $lib->free_buffer( $_[HEAP]{freenect}{buffers}{$k} );
     }
-    $_[HEAP]{freenect}{lib}->close_device( 0 );
+    $lib->stop_video;
+    $lib->stop_depth;
+    $lib->close_device( 0 );
     delete $_[HEAP]{console};
     delete $_[HEAP]{freenect}{lib};
   }

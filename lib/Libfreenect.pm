@@ -154,7 +154,7 @@ sub new {
   my $class = ref $proto || $proto;
 
   my $f_ctx = Libfreenect::init();
-  die "*** Could not init!\n" unless $f_ctx;
+  die "*** Could not init!\n" if $f_ctx <= 0;
   return bless {
     f_ctx => $f_ctx
   }, $class;
@@ -296,6 +296,18 @@ sub get_buffer_value {
   my $buffer = shift;
   my $idx = shift;
   return Libfreenect::_get_buffer_value( $buffer, $idx );
+}
+
+sub set_log_callback {
+  my $self = shift;
+  my $callback = shift;
+  Libfreenect::_set_log_callback( $self->{f_ctx}, $callback );
+}
+
+sub set_my_log_callback {
+  my $self = shift;
+#  my $callback = shift;
+  Libfreenect::_set_my_log_callback( $self->{f_ctx} );
 }
 
 1;
