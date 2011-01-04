@@ -9,3 +9,4 @@ t/Libfreenect.t
 fallback/const-c.inc
 fallback/const-xs.inc
 lib/Libfreenect.pm
+lib/POE/Wheel/Kinect.pm

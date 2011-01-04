@@ -6,6 +6,7 @@ use Libfreenect;
 
 use Curses;
 use POE qw(Wheel::Curses);
+use POE qw(Wheel::Kinect);
 
 POE::Session->create(
   inline_states => {
