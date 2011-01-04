@@ -5,15 +5,10 @@ package POE::Wheel::Kinect;
 use strict;
 
 use vars qw($VERSION);
-$VERSION = '1.294'; # NOTE - Should be #.### (three decimal places)
+$VERSION = '0.02'; # NOTE - Should be #.### (three decimal places)
 
 use Carp qw(croak);
-use Curses qw(
-  initscr start_color cbreak raw noecho nonl nodelay timeout keypad
-  intrflush meta typeahead clear refresh
-  endwin COLS
-);
-use Fcntl qw(F_GETFL F_SETFL O_NONBLOCK);
+use Libfreenect;
 use POE qw( Wheel );
 use base qw(POE::Wheel);
 
@@ -21,6 +16,7 @@ sub SELF_STATE_READ  () { 0 }
 sub SELF_STATE_WRITE () { 1 }
 sub SELF_EVENT_INPUT () { 2 }
 sub SELF_ID          () { 3 }
+sub SELF_FREENECT    () { 4 }
 
 sub new {
   my $type = shift;
@@ -43,35 +39,23 @@ sub new {
       undef,                            # SELF_STATE_WRITE
       $input_event,                     # SELF_EVENT_INPUT
       &POE::Wheel::allocate_wheel_id(), # SELF_ID
+      Libfreenect->new,                 # SELF_FREENECT
     ];
 
-  # Set up the screen, and enable color, mangle the terminal and
-  # keyboard.
+  # XXX set up Libfreenect here
+  $self->[SELF_FREENECT]->set_log_level( FREENECT_LOG_DEBUG );
+  $self->[SELF_FREENECT]->num_devices > 0 or die( "No devices found!" );
+  $self->[SELF_FREENECT]->open_device( 0 );
+  $self->[SELF_FREENECT]->start_depth;
+  $self->[SELF_FREENECT]->start_video;
 
-  initscr();
-  start_color();
+$self->[SELF_FREENECT]->set_my_log_callback();
 
-  cbreak();
-  raw();
-  noecho();
-  nonl();
-
-  # Both of these achieve nonblocking input.
-  nodelay(1);
-  timeout(0);
-
-  keypad(1);
-  intrflush(0);
-  meta(1);
-  typeahead(-1);
-
-  clear();
-  refresh();
+$self->[SELF_FREENECT]->process_events();
 
   # Define the input event.
   $self->_define_input_state();
 
-  # Oop! Return ourself.  I forgot to do this.
   $self;
 }
 
@@ -88,17 +72,17 @@ sub _define_input_state {
       ( $self->[SELF_STATE_READ] = ref($self) . "($unique_id) -> select read",
         sub {
 
-          # Prevents SEGV in older Perls.
-          0 && CRIMSON_SCOPE_HACK('<');
-
-          my ($k, $me) = @_[KERNEL, SESSION];
-
-          # Curses' getch() normally blocks, but we've already
-          # determined that STDIN has something for us.  Be explicit
-          # about which getch() to use.
-          while ((my $keystroke = Curses::getch) ne '-1') {
-            $k->call( $me, $$event_input, $keystroke, $unique_id );
-          }
+#          # Prevents SEGV in older Perls.
+#          0 && CRIMSON_SCOPE_HACK('<');
+#
+#          my ($k, $me) = @_[KERNEL, SESSION];
+#
+#          # Curses' getch() normally blocks, but we've already
+#          # determined that STDIN has something for us.  Be explicit
+#          # about which getch() to use.
+#          while ((my $keystroke = Curses::getch) ne '-1') {
+#            $k->call( $me, $$event_input, $keystroke, $unique_id );
+#          }
         }
       );
 
@@ -107,8 +91,8 @@ sub _define_input_state {
 
     # Turn blocking back on for STDIN.  Some Curses implementations
     # don't deal well with non-blocking STDIN.
-    my $flags = fcntl(STDIN, F_GETFL, 0) or die $!;
-    fcntl(STDIN, F_SETFL, $flags & ~O_NONBLOCK) or die $!;
+#    my $flags = fcntl(STDIN, F_GETFL, 0) or die $!;
+#    fcntl(STDIN, F_SETFL, $flags & ~O_NONBLOCK) or die $!;
   }
   else {
     $poe_kernel->select_read( \*STDIN );
@@ -121,14 +105,18 @@ sub DESTROY {
   # Turn off the select.
   $poe_kernel->select( \*STDIN );
 
+  $self->[SELF_FREENECT]->stop_video;
+  $self->[SELF_FREENECT]->stop_depth;
+  $self->[SELF_FREENECT]->close_device( 0 );
+
   # Remove states.
   if ($self->[SELF_STATE_READ]) {
     $poe_kernel->state($self->[SELF_STATE_READ]);
     $self->[SELF_STATE_READ] = undef;
   }
 
-  # Restore the terminal.
-  endwin if COLS;
+#  # Restore the terminal.
+#  endwin if COLS;
 
   &POE::Wheel::free_wheel_id($self->[SELF_ID]);
 }
