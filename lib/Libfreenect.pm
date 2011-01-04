@@ -239,6 +239,11 @@ sub get_tilt_state {
   return Libfreenect::_get_tilt_state( $self->{f_dev} );
 }
 
+sub get_mks_accel {
+  my $self = shift;
+  return Libfreenect::_get_mks_accel( $self->{f_dev} );
+}
+
 sub get_user {
   my $self = shift;
   return Libfreenect::_get_user( $self->{f_dev} );
@@ -304,10 +309,9 @@ sub set_log_callback {
   Libfreenect::_set_log_callback( $self->{f_ctx}, $callback );
 }
 
-sub set_my_log_callback {
+sub set_my_callbacks {
   my $self = shift;
-#  my $callback = shift;
-  Libfreenect::_set_my_log_callback( $self->{f_ctx} );
+  Libfreenect::_set_my_callbacks( $self->{f_ctx}, $self->{f_dev} );
 }
 
 1;

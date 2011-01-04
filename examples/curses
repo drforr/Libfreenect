@@ -2,52 +2,76 @@
 
 use strict;
 use warnings;
-#use Libfreenect;
+use Libfreenect;
 
 use Curses;
 use POE qw(Wheel::Curses);
-use POE qw(Wheel::Kinect);
 
 POE::Session->create(
   inline_states => {
     _start => \&_start,
+    got_freenect => \&got_freenect,
     got_keystroke => \&got_keystroke,
-    got_event => sub { die "called kinect\n" },
+    _stop => \&_stop,
   }
 );
+
+sub got_freenect {
+  return unless $_[HEAP]{freenect}{lib};
+  my $lib = $_[HEAP]{freenect}{lib};
+
+  $lib->update_tilt_state;
+  my @tilt = $lib->get_tilt_state;
+  my @accel = $lib->get_mks_accel;
+  addstr( 0, 0, "x: $tilt[0]" . ' ' x ( 80 - length('x: '. $tilt[0] ) ) );
+  addstr( 0, 40, "dx: $accel[0]" );
+  addstr( 1, 0, "y: $tilt[1]" . ' ' x ( 80 - length('y: '. $tilt[1] ) ) );
+  addstr( 1, 40, "dy: $accel[1]" );
+  addstr( 2, 0, "z: $tilt[2]" . ' ' x ( 80 - length('z: '. $tilt[2] ) ) );
+  addstr( 2, 40, "dz: $accel[2]" );
+  noutrefresh;
+  doupdate;
+
+  if ( $lib->process_events ) {
+    print "Got event!\n";
+  }
+  $_[KERNEL]->yield('got_freenect');
+}
 
 sub _start {
   $_[HEAP]{console} = POE::Wheel::Curses->new(
     InputEvent => 'got_keystroke',
   );
-  $_[HEAP]{kinect} = POE::Wheel::Kinect->new(
-    InputEvent => 'got_event',
-  );
-#  my $lib = Libfreenect->new;
-#  $lib->set_log_level( FREENECT_LOG_DEBUG );
-#  $lib->num_devices > 0 or die( "No devices found!" );
-#  $lib->open_device( 0 );
-#  $lib->start_depth;
-#  $lib->start_video;
+  my $lib = Libfreenect->new;
+  #$lib->set_log_level( FREENECT_LOG_DEBUG );
+  #$lib->set_log_level( FREENECT_LOG_FLOOD );
+  $lib->num_devices > 0 or die( "No devices found!" );
+  $lib->open_device( 0 );
+  $lib->set_video_format( FREENECT_VIDEO_RGB );
+  $lib->set_depth_format( FREENECT_DEPTH_11BIT );
+  $lib->start_depth;
+  $lib->start_video;
 
   $_[HEAP]{freenect} = {
-#    lib => $lib,
+    lib => $lib,
     angle => 0,
-#    buffers => {
-#      depth_mid => $lib->malloc_buffer(),
-#      depth_front => $lib->malloc_buffer(),
-#      rgb_back => $lib->malloc_buffer(),
-#      rgb_mid => $lib->malloc_buffer(),
-#      rgb_front => $lib->malloc_buffer(),
-#    },
+    buffers => {
+      depth_mid => $lib->malloc_buffer(),
+      depth_front => $lib->malloc_buffer(),
+      rgb_back => $lib->malloc_buffer(),
+      rgb_mid => $lib->malloc_buffer(),
+      rgb_front => $lib->malloc_buffer(),
+    },
   };
 
-#$lib->set_my_log_callback();
+$lib->set_my_callbacks();
 
 #  # Inspect a byte of the rgb_front buffer
 #  $lib->set_video_buffer( $_[HEAP]{buffers}{rgb_front} );
 #$lib->process_events();
 #  print "Byte value: [".$lib->get_buffer_value( $_[HEAP]{buffers}{rgb_front}, 9 ). "]\n";
+
+  $_[KERNEL]->yield('got_freenect');
 }
 
 sub got_keystroke {
@@ -61,41 +85,44 @@ sub got_keystroke {
     $keystroke = '<' . uc(keyname($keystroke)) . '>';
   }
 
-  # Just display it.
   noutrefresh();
   doupdate;
 
   my $freenect = $_[HEAP]{freenect};
   my %action = (
-#    '0' => sub { $freenect->{lib}->set_led( LED_BLINK_GREEN ) },
-#    '1' => sub { $freenect->{lib}->set_led( LED_BLINK_RED_YELLOW ) },
-#    '2' => sub { $freenect->{lib}->set_led( LED_BLINK_YELLOW ) },
-#    '3' => sub { $freenect->{lib}->set_led( LED_GREEN ) },
-#    '4' => sub { $freenect->{lib}->set_led( LED_OFF ) },
-#    '5' => sub { $freenect->{lib}->set_led( LED_RED ) },
-#    '6' => sub { $freenect->{lib}->set_led( LED_YELLOW ) },
-#    'w' => sub { $freenect->{angle}++ }, 
-#    's' => sub { $freenect->{angle} = 0 }, 
-#    'x' => sub { $freenect->{angle}-- }, 
+    '0' => sub { $freenect->{lib}->set_led( LED_BLINK_GREEN ) },
+    '1' => sub { $freenect->{lib}->set_led( LED_BLINK_RED_YELLOW ) },
+    '2' => sub { $freenect->{lib}->set_led( LED_BLINK_YELLOW ) },
+    '3' => sub { $freenect->{lib}->set_led( LED_GREEN ) },
+    '4' => sub { $freenect->{lib}->set_led( LED_OFF ) },
+    '5' => sub { $freenect->{lib}->set_led( LED_RED ) },
+    '6' => sub { $freenect->{lib}->set_led( LED_YELLOW ) },
+    'w' => sub { $freenect->{angle}++ }, 
+    's' => sub { $freenect->{angle} = 0 }, 
+    'x' => sub { $freenect->{angle}-- }, 
   );
   $action{$keystroke}->() if $action{$keystroke};
   $freenect->{angle} = 30 if $freenect->{angle} > 30;
   $freenect->{angle} = -30 if $freenect->{angle} < -30;
 
-#  $freenect->{lib}->set_tilt_degs( $freenect->{angle} );
+  $freenect->{lib}->set_tilt_degs( $freenect->{angle} );
 
   # Gotta exit somehow.
   if ( $keystroke eq 'q' or $keystroke eq '<^C>' ) {
-#    my $lib = $_[HEAP]{freenect}{lib};
-#    for my $k ( keys %{$_[HEAP]{freenect}{buffers}} ) {
-#      $lib->free_buffer( $_[HEAP]{freenect}{buffers}{$k} );
-#    }
-#    $lib->stop_video;
-#    $lib->stop_depth;
-#    $lib->close_device( 0 );
+    $_[KERNEL]->yield('_stop');
     delete $_[HEAP]{console};
-#    delete $_[HEAP]{freenect}{lib};
   }
+}
+
+sub _stop {
+  my $lib = $_[HEAP]{freenect}{lib};
+  for my $k ( keys %{$_[HEAP]{freenect}{buffers}} ) {
+    $lib->free_buffer( $_[HEAP]{freenect}{buffers}{$k} );
+  }
+  $lib->stop_video;
+  $lib->stop_depth;
+  $lib->close_device( 0 );
+  delete $_[HEAP]{freenect}{lib};
 }
 
 POE::Kernel->run();

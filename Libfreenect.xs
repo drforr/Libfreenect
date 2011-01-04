@@ -9,8 +9,14 @@
 
 #include "const-c.inc"
 
-void my_callback( void* dev, int level, const char* msg ) {
-  printf( "%s\n", msg );
+void my_log_callback( void* f_dev, int level, const char* msg ) {
+  printf( "*** log %s\n", msg );
+}
+void my_depth_callback( void* f_dev, void* depth, long timestamp ) {
+  printf( "*** depth\n" );
+}
+void my_video_callback( void* f_dev, void* video, long timestamp ) {
+  printf( "*** video\n" );
 }
 
 MODULE = Libfreenect		PACKAGE = Libfreenect		
@@ -118,13 +124,6 @@ _update_tilt_state( void* f_dev )
 		RETVAL
 
 void*
-_get_tilt_state( void* f_dev )
-	CODE:
-		RETVAL = freenect_get_tilt_state( f_dev );
-	OUTPUT:
-		RETVAL
-
-void*
 _get_user( void* f_dev )
 	CODE:
 		RETVAL = freenect_get_user( f_dev );
@@ -196,6 +195,31 @@ _set_log_callback( void* ctx, void* cb )
 		freenect_set_log_callback( ctx, cb );
 
 void
-_set_my_log_callback( void* ctx )
+_set_my_callbacks( void* ctx, void* f_dev )
 	CODE:
-		freenect_set_log_callback( ctx, &my_callback );
+		freenect_set_log_callback( ctx, my_log_callback );
+		freenect_set_depth_callback( f_dev, my_depth_callback );
+		freenect_set_video_callback( f_dev, my_video_callback );
+
+void
+_get_tilt_state( void* f_dev )
+	INIT:
+		freenect_raw_tilt_state* state;
+	PPCODE:
+		state = freenect_get_tilt_state( f_dev );
+		XPUSHs(sv_2mortal(newSVnv(state->accelerometer_x)));
+		XPUSHs(sv_2mortal(newSVnv(state->accelerometer_y)));
+		XPUSHs(sv_2mortal(newSVnv(state->accelerometer_z)));
+
+void
+_get_mks_accel( void* f_dev )
+	INIT:
+		// XXX THIS NEEDS TO BE RETHOUGHT
+		freenect_raw_tilt_state* state;
+		double dx, dy, dz;
+	PPCODE:
+		state = freenect_get_tilt_state( f_dev );
+		freenect_get_mks_accel( state, &dx, &dy, &dz );
+		XPUSHs(sv_2mortal(newSVnv(dx)));
+		XPUSHs(sv_2mortal(newSVnv(dy)));
+		XPUSHs(sv_2mortal(newSVnv(dz)));

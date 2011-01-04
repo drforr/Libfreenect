@@ -49,6 +49,11 @@ my $lib = Libfreenect->new;
 $lib->set_log_level( FREENECT_LOG_DEBUG );
 $lib->num_devices > 0 or BAIL_OUT( "No devices found!" );
 $lib->open_device( 0 );
+$lib->update_tilt_state;
+my @tilt = $lib->get_tilt_state;
+my @accel = $lib->get_mks_accel;
+use YAML;warn "tilt: ".Dump(\@tilt);
+use YAML;warn "accel: ".Dump(\@accel);
 
 #$lib->set_led( LED_BLINK_RED_YELLOW );
 #$lib->set_led( LED_BLINK_GREEN );
