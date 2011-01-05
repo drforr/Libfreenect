@@ -57,3 +57,4 @@ $lib->set_led( LED_OFF );
 $lib->stop_video;
 $lib->stop_depth;
 $lib->close_device( 0 );
+$lib->shutdown or die "Unclean shutdown\n";

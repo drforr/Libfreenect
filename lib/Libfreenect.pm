@@ -160,12 +160,9 @@ sub new {
   }, $class;
 }
 
-sub DESTROY {
+sub shutdown {
   my $self = shift;
-  my $ret = Libfreenect::shutdown( $self->{f_ctx} );
-  if ( $ret ) {
-    die "*** Unclean shutdown! $ret\n";
-  }
+  return Libfreenect::shutdown( $self->{f_ctx} );
 }
 
 sub set_log_level {

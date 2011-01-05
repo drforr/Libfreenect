@@ -125,9 +125,12 @@ sub _stop {
   for my $k ( keys %{$_[HEAP]{freenect}{buffers}} ) {
     $lib->free_buffer( $_[HEAP]{freenect}{buffers}{$k} );
   }
+  $lib->set_led( LED_OFF );
+  $lib->set_tilt_degs( 0 );
   $lib->stop_video;
   $lib->stop_depth;
   $lib->close_device( 0 );
+  $lib->shutdown or die "Unclean shutdown\n";
   delete $_[HEAP]{freenect}{lib};
 }
 
