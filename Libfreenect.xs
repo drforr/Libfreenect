@@ -26,7 +26,7 @@ INCLUDE: const-xs.inc
 void*
 init()
 	CODE:
-		void* f_ctx;
+		freenect_context* f_ctx;
 		int result = freenect_init( &f_ctx, NULL );
 		// XXX FIXME DAMNIT
 		if ( result == -1 )
@@ -37,14 +37,14 @@ init()
 		RETVAL
 
 int
-shutdown( void* f_ctx )
+shutdown( freenect_context* f_ctx )
 	CODE:
 		RETVAL = freenect_shutdown( f_ctx );
 	OUTPUT:
 		RETVAL
 
 void
-_set_log_level( void* f_ctx, int level )
+_set_log_level( freenect_context* f_ctx, int level )
 	CODE:
 		freenect_set_log_level( f_ctx, (freenect_loglevel) level );
 
