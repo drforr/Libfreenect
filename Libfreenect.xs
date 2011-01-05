@@ -171,9 +171,9 @@ _set_tilt_degs( void* f_dev, double angle )
 		RETVAL
 
 void*
-_malloc_buffer( )
+_malloc_buffer( int size )
 	CODE:
-		RETVAL = malloc( 640 * 480 * 3 );
+		RETVAL = malloc( size );
 	OUTPUT:
 		RETVAL
 
@@ -210,11 +210,12 @@ _get_tilt_state( void* f_dev )
 		XPUSHs(sv_2mortal(newSVnv(state->accelerometer_x)));
 		XPUSHs(sv_2mortal(newSVnv(state->accelerometer_y)));
 		XPUSHs(sv_2mortal(newSVnv(state->accelerometer_z)));
+		XPUSHs(sv_2mortal(newSVnv(state->tilt_angle)));
+		XPUSHs(sv_2mortal(newSVnv(state->tilt_status)));
 
 void
 _get_mks_accel( void* f_dev )
 	INIT:
-		// XXX THIS NEEDS TO BE RETHOUGHT
 		freenect_raw_tilt_state* state;
 		double dx, dy, dz;
 	PPCODE:

@@ -287,7 +287,8 @@ sub set_tilt_degs {
 
 sub malloc_buffer {
   my $self = shift;
-  return Libfreenect::_malloc_buffer();
+  my $size = shift;
+  return Libfreenect::_malloc_buffer( $size );
 }
 
 sub free_buffer {
