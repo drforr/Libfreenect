@@ -67,7 +67,7 @@ _open_device ( void* f_ctx, int user_device_number )
 	OUTPUT:
 		RETVAL
 
-void*
+int
 _close_device ( freenect_device* f_dev )
 	CODE:
 		RETVAL = freenect_close_device( f_dev );
