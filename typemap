@@ -1,1 +1,2 @@
 freenect_context * T_PV
+freenect_device * T_PV

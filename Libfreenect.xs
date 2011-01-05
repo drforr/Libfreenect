@@ -58,7 +58,7 @@ _num_devices( void* f_ctx )
 void*
 _open_device ( void* f_ctx, int user_device_number )
 	CODE:
-		void* f_dev;
+		freenect_device* f_dev;
 		int ret_val = freenect_open_device( f_ctx, &f_dev, user_device_number );
 		if ( ret_val < 0 )
 			RETVAL = ret_val;
@@ -68,7 +68,7 @@ _open_device ( void* f_ctx, int user_device_number )
 		RETVAL
 
 void*
-_close_device ( void* f_dev )
+_close_device ( freenect_device* f_dev )
 	CODE:
 		RETVAL = freenect_close_device( f_dev );
 	OUTPUT:

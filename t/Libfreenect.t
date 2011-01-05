@@ -1,4 +1,4 @@
-use Test::More tests => 2;
+use Test::More tests => 4;
 BEGIN { use_ok('Libfreenect') };
 
 my $fail = 0;
@@ -29,34 +29,31 @@ foreach my $constname (qw(
   }
 }
 
-=pod
-
-void freenect_set_log_callback(freenect_context *ctx, freenect_log_cb cb);
-
-void freenect_set_depth_callback(freenect_device *dev, freenect_depth_cb cb);
-void freenect_set_video_callback(freenect_device *dev, freenect_video_cb cb);
-
-double freenect_get_tilt_degs(freenect_raw_tilt_state *state);
-void freenect_get_mks_accel(freenect_raw_tilt_state *state, double* x, double* y, double* z);
-
-=cut
-
 ok( $fail == 0 , 'Constants' );
-
-#=pod
 
 my $lib = Libfreenect->new;
 $lib->set_log_level( FREENECT_LOG_DEBUG );
 $lib->num_devices > 0 or BAIL_OUT( "No devices found!" );
 $lib->open_device( 0 );
+$lib->set_video_format( FREENECT_VIDEO_RGB );
+$lib->set_depth_format( FREENECT_DEPTH_11BIT );
+$lib->start_depth;
+$lib->start_video;
+
 $lib->update_tilt_state;
 my @tilt = $lib->get_tilt_state;
 my @accel = $lib->get_mks_accel;
-use YAML;warn "tilt: ".Dump(\@tilt);
-use YAML;warn "accel: ".Dump(\@accel);
+ok( $tilt[0] != 0 );
+ok( $accel[0] != 0 );
 
-#$lib->set_led( LED_BLINK_RED_YELLOW );
-#$lib->set_led( LED_BLINK_GREEN );
+$lib->set_led( LED_RED );
+sleep(1);
+#$lib->set_tilt_degs( -1 );
+#sleep(1);
+#$lib->set_tilt_degs( 0 );
+sleep(1);
 $lib->set_led( LED_OFF );
 
+$lib->stop_video;
+$lib->stop_depth;
 $lib->close_device( 0 );
