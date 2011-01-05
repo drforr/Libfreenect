@@ -170,6 +170,13 @@ _set_tilt_degs( void* f_dev, double angle )
 	OUTPUT:
 		RETVAL
 
+double
+_get_tilt_degs( void* state )
+	CODE:
+		RETVAL = freenect_get_tilt_degs( state );
+	OUTPUT:
+		RETVAL
+
 void*
 _malloc_buffer( int size )
 	CODE:
@@ -193,6 +200,16 @@ void
 _set_log_callback( void* ctx, void* cb )
 	CODE:
 		freenect_set_log_callback( ctx, cb );
+
+void
+_set_depth_callback( void* ctx, void* cb )
+	CODE:
+		freenect_set_depth_callback( ctx, cb );
+
+void
+_set_video_callback( void* ctx, void* cb )
+	CODE:
+		freenect_set_video_callback( ctx, cb );
 
 void
 _set_my_callbacks( void* ctx, void* f_dev )
