@@ -19,7 +19,7 @@ void my_video_callback( void* f_dev, void* video, long timestamp ) {
   printf( "*** video\n" );
 }
 
-MODULE = Libfreenect		PACKAGE = Libfreenect		
+MODULE = Libfreenect		PACKAGE = Libfreenect
 
 INCLUDE: const-xs.inc
 

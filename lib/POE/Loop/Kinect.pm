@@ -47,7 +47,7 @@ sub loop_initialize {
 
   # Must Gnome->init() yourselves, as it takes parameters.
   unless (exists $INC{'Gnome.pm'}) {
-    # Gtk can only be initialized once. 
+    # Gtk can only be initialized once.
     # So if we've initialized it already, skip the whole deal.
     unless($gtk_init_check) {
       $gtk_init_check++;
