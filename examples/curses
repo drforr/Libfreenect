@@ -103,9 +103,9 @@ sub got_keystroke {
     '4' => sub { $freenect->{lib}->set_led( LED_OFF ) },
     '5' => sub { $freenect->{lib}->set_led( LED_RED ) },
     '6' => sub { $freenect->{lib}->set_led( LED_YELLOW ) },
-    'w' => sub { $freenect->{angle}++ }, 
-    's' => sub { $freenect->{angle} = 0 }, 
-    'x' => sub { $freenect->{angle}-- }, 
+    'w' => sub { $freenect->{angle}++ },
+    's' => sub { $freenect->{angle} = 0 },
+    'x' => sub { $freenect->{angle}-- },
   );
   $action{$keystroke}->() if $action{$keystroke};
   $freenect->{angle} = 30 if $freenect->{angle} > 30;
